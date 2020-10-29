@@ -15,8 +15,12 @@ namespace Raycaster
         Graphics gfx;
         Bitmap canvas;
 
+        Random random = new Random();
+
+        public int cursorRadius = 20;
         Point cursorLoc => pictureBox1.PointToClient(MousePosition);
-        
+
+        public int[][] LinePoints = new int[4][];
         public Form1()
         {
             InitializeComponent();
@@ -25,14 +29,16 @@ namespace Raycaster
         private void Form1_Load(object sender, EventArgs e)
         {
             canvas = new Bitmap(pictureBox1.Width, pictureBox1.Height);
+            LinePoints = DrawRandom();
             gfx = Graphics.FromImage(canvas);
+
         }
 
-        public void DrawCircle(int x, int y, int radius)
+        public void DrawCircle(int x, int y, double degreeIncrimant, int radius)
         {
-            for(int i = 0; i < 120; i ++)
+            for (int i = 0; i < (360/degreeIncrimant); i++)
             {
-                gfx.DrawLine(Pens.White, x, y, radius*(float)Math.Cos(3*i) + x, radius*(float)Math.Sin(3*i) + y);
+                gfx.DrawLine(Pens.White, x, y, radius * (float)Math.Cos(degreeIncrimant * i * Math.PI/180) + x, radius * (float)Math.Sin(degreeIncrimant * i * Math.PI/180) + y);
 
                 //gfx.DrawLine(Pens.White, x, y, i + y, returnCircle(i, radius) + y);
                 //gfx.DrawLine(Pens.White, x, y, i, -returnCircle(i, radius));
@@ -40,31 +46,50 @@ namespace Raycaster
             //return equation of circle translated up to cursor mark
         }
 
-        public List<List<int>> DrawRandom()
+        public void DrawRays(int x, int y, double degreeIncrimant, int radius)
         {
-            Random random = new Random();
-            //int[][] returnArray = new int[4][4];
-            List<List<int>> returnArray = new List<List<int>>();
-            for(int i = 0; i < 4; i ++)
+            for (int i = 0; i < (360 / degreeIncrimant); i++)
             {
-                returnArray.Add(new List<int>());
-                for(int x = 0; x < 4; x ++)
+                if()
                 {
-                    returnArray[i].Add(0);
+
+                }
+                gfx.DrawLine(Pens.White, x, y, radius * (float)Math.Cos(degreeIncrimant * i * Math.PI / 180) + x, radius * (float)Math.Sin(degreeIncrimant * i * Math.PI / 180) + y);
+
+            }
+        }
+
+        public bool isT(int[] checkLine, int[] rayLine)
+        {
+
+        }
+
+        public bool isU(int[] checkLine, int[] rayLine)
+        {
+
+        }
+
+        public int[][] DrawRandom()
+        {
+            int[][] returnArray = new int[4][];
+            for (int i = 0; i < 4; i++)
+            {
+                for (int x = 0; x < 4; x++)
+                {
+                    returnArray[i] = new int[4];
                 }
             }
 
-            for(int i = 0; i < 4; i ++)
+            for (int i = 0; i < 4; i++)
             {
-                for(int x = 0; x < 2; x ++)
+                for (int x = 0; x < 2; x++)
                 {
-                    returnArray[i][2*x] = random.Next(0, 801);
+                    returnArray[i][2 * x] = random.Next(0, 801);
                 }
-                for(int y = 0; y < 2; y ++)
+                for (int y = 0; y < 2; y++)
                 {
-                    returnArray[i][2*y + 1] = random.Next(0, 451);
+                    returnArray[i][2 * y + 1] = random.Next(0, 451);
                 }
-                gfx.DrawLine(Pens.White, returnArray[i][0], returnArray[i][1], returnArray[i][2], returnArray[i][3]);
             }
             return returnArray;
         }
@@ -80,13 +105,17 @@ namespace Raycaster
             gfx.Clear(Color.Black);
             // drawing and update happens here
 
-            DrawCircle(cursorLoc.X, cursorLoc.Y, 20);
+            DrawCircle(cursorLoc.X, cursorLoc.Y, 3, cursorRadius);
 
             // 0,0 is top left, x increases to the right, y increases towards the bottom
             this.Text = cursorLoc.ToString();   // set title of the form
-            gfx.DrawLine(Pens.White, 0, 0, 100, 100);
 
-            DrawRandom();
+            for(int i = 0; i < 4; i ++)
+            {
+                gfx.DrawLine(Pens.White, LinePoints[i][0], LinePoints[i][1], LinePoints[i][2], LinePoints[i][3]);
+            }
+
+            DrawRays(cursorLoc.X, cursorLoc.Y, 10, 100);
             // this should be last line ideally to show the stuff we drew 
             pictureBox1.Image = canvas;
         }
