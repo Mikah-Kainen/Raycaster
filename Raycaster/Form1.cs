@@ -46,27 +46,67 @@ namespace Raycaster
             //return equation of circle translated up to cursor mark
         }
 
-        public void DrawRays(int x, int y, double degreeIncrimant, int radius)
+        public void DrawRays(int x, int y, int degreeIncrimant, int radius)
         {
+            int endX;
+            int endY;
+            int[] currentLine;
             for (int i = 0; i < (360 / degreeIncrimant); i++)
             {
-                if()
+                endX = radius * (int)Math.Cos(degreeIncrimant * i * Math.PI / 180) + x;
+                endY = radius * (int)Math.Sin(degreeIncrimant * i * Math.PI / 180) + y;
+                currentLine = new int[4] {x, y, endX, endY};
+                for(int z = 0; z < LinePoints.Length + 1; z ++)
                 {
-
+                    if(z == LinePoints.Length)
+                    {
+                        gfx.DrawLine(Pens.White, x, y, endX, endY);
+                    }
+                    else if(isT(LinePoints[z], currentLine) && isU(LinePoints[z], currentLine))
+                    {
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
-                gfx.DrawLine(Pens.White, x, y, radius * (float)Math.Cos(degreeIncrimant * i * Math.PI / 180) + x, radius * (float)Math.Sin(degreeIncrimant * i * Math.PI / 180) + y);
-
             }
         }
 
-        public bool isT(int[] checkLine, int[] rayLine)
+        public bool isT(int[] lineSegment, int[] rayLine)
         {
-
+            double top;
+            double bottom;
+            top = (double)((lineSegment[0] - rayLine[0])*(rayLine[1] - rayLine[3]) - (lineSegment[1] - rayLine[1])*(rayLine[0] - rayLine[2]));
+            bottom = (double)((lineSegment[0] - lineSegment[2])*(rayLine[1] - rayLine[3]) - (lineSegment[1] - lineSegment[3])*(rayLine[0] - rayLine[2]));
+            if(bottom == 0)
+            {
+                return false;
+            }
+            double T = top / bottom;
+            if(T >= 0 && T <= 1)
+            {
+                return true;
+            }
+            return false;
         }
 
-        public bool isU(int[] checkLine, int[] rayLine)
+        public bool isU(int[] lineSegment, int[] rayLine)
         {
-
+            double top;
+            double bottom;
+            top = (double)((lineSegment[0] - lineSegment[2])*(lineSegment[1] - rayLine[1]) - (lineSegment[1] - lineSegment[3])*(lineSegment[0] - lineSegment[2]));
+            bottom = (double)((lineSegment[0] - lineSegment[2])*(rayLine[1] - rayLine[3]) - (lineSegment[1] - lineSegment[3])*(rayLine[0] - rayLine[2]));
+            if(bottom == 0)
+            {
+                return false;
+            }
+            double U = (-1)*(top / bottom);
+            if(U >= 0 && U <= 1)
+            {
+                return true;
+            }
+            return false;
         }
 
         public int[][] DrawRandom()
@@ -115,7 +155,7 @@ namespace Raycaster
                 gfx.DrawLine(Pens.White, LinePoints[i][0], LinePoints[i][1], LinePoints[i][2], LinePoints[i][3]);
             }
 
-            DrawRays(cursorLoc.X, cursorLoc.Y, 10, 100);
+            DrawRays(cursorLoc.X, cursorLoc.Y, 10, 50);
             // this should be last line ideally to show the stuff we drew 
             pictureBox1.Image = canvas;
         }
