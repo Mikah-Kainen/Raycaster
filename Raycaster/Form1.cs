@@ -158,16 +158,37 @@ namespace Raycaster
                     returnArray[i] = new int[4];
                 }
             }
-
+            
+            int[] temp = new int[2];
             for (int i = 0; i < 4; i++)
             {
                 for (int x = 0; x < 2; x++)
                 {
-                    returnArray[i][2 * x] = random.Next(0, 801);
+                    temp[x] = random.Next(0, 801);
+                }
+                if(temp[0] > temp[1])
+                {
+                    returnArray[0] = temp[0];
+                    returnArray[2] = temp[1]
+;               }
+                else
+                {
+                    returnArray[0] = temp[1];
+                    returnArray[2] = temp[0];
                 }
                 for (int y = 0; y < 2; y++)
                 {
-                    returnArray[i][2 * y + 1] = random.Next(0, 451);
+                    temp[i][2 * y + 1] = random.Next(0, 451);
+                }
+                if(temp[0] > temp[1])
+                {
+                    returnArray[1] = temp[0];
+                    returnArray[3] = temp[1]
+;               }
+                else
+                {
+                    returnArray[1] = temp[1];
+                    returnArray[3] = temp[0];
                 }
             }
             return returnArray;
