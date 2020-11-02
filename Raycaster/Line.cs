@@ -3,17 +3,17 @@
 
         public struct Line
         {
-            public int x1;
-            public int x2;
-            public int y1;
-            public int y2;
+            public int X1;
+            public int X2;
+            public int Y1;
+            public int Y2;
 
             public Line(int x1, int y1, int x2, int y2)
             {
-                this.x1 = x1;
-                this.x2 = x2;
-                this.y1 = y1;
-                this.y2 = y2;
+                this.X1 = x1;
+                this.X2 = x2;
+                this.Y1 = y1;
+                this.Y2 = y2;
             }
         }
 }
