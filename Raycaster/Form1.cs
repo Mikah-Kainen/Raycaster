@@ -47,7 +47,7 @@ namespace Raycaster
             //return equation of circle translated up to cursor mark
         }
 
-        public void DrawRays(int x, int y, double degreeIncrimant, int radius)
+        public void DrawRays(int x, int y, double radianIncrimant, int radius)
         {
             float endX;
             float endY;
@@ -57,11 +57,11 @@ namespace Raycaster
             Point[] intersectionPoints = new Point[LinePoints.Length];
             int leastDistance = int.MaxValue;
             int distance;
-            for (int i = 0; i < (360 / degreeIncrimant); i++)
+            for (int i = 0; i < (int)((double)(2*Math.PI) / radianIncrimant); i++)
             {
                 didntIntersect = true;
-                endX = radius * (float)Math.Cos(degreeIncrimant * i * Math.PI / 180) + x;
-                endY = radius * (float)Math.Sin(degreeIncrimant * i * Math.PI / 180) + y;
+                endX = radius * (float)Math.Cos(radianIncrimant*(double)i) + x;
+                endY = radius * (float)Math.Sin(radianIncrimant*(double)i) + y;
                 currentLine = new Line(x, y, (int)endX, (int)endY);
                 
                 for(int z = 0; z < LinePoints.Length; z ++)
@@ -82,7 +82,7 @@ namespace Raycaster
                     {
                         if (point != default)
                         {
-                            distance = (int)Math.Abs(Math.Sqrt((point.X - x) * (point.X - x) + (point.Y - y) * (point.Y - y)));
+                            distance = (int)(Math.Sqrt(Math.Abs((point.X - x) * (point.X - x) + (point.Y - y) * (point.Y - y))));
                             if (distance < leastDistance)
                             {
                                 leastDistance = distance;
@@ -90,7 +90,10 @@ namespace Raycaster
                             }
                         }
                     }
-                    gfx.DrawLine(Pens.White, x, y, intersectionPoint.X, intersectionPoint.Y);
+                    if(intersectionPoint != default)
+                    {
+                        gfx.DrawLine(Pens.White, x, y, intersectionPoint.X, intersectionPoint.Y);
+                    }
                 }
                 //else
                 //{
@@ -264,7 +267,7 @@ namespace Raycaster
             }
 
             DrawBorder();
-            DrawRays(cursorLoc.X, cursorLoc.Y, 10, 1000);
+            DrawRays(cursorLoc.X, cursorLoc.Y, .25, 1000);
             // this should be last line ideally to show the stuff we drew 
             pictureBox1.Image = canvas;
         }
