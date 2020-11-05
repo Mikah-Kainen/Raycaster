@@ -13,11 +13,11 @@ namespace Raycaster
     public partial class Form1 : Form
     {
         Graphics gfx;
-        static Bitmap canvas;
+        Bitmap canvas;
 
         Random random = new Random();
 
-        public int cursorRadius = 20;
+        public int cursorRadius = 30;
         Point cursorLoc => pictureBox1.PointToClient(MousePosition);
 
 
@@ -37,9 +37,9 @@ namespace Raycaster
 
         public void DrawCircle(int x, int y, double degreeIncrimant, int radius)
         {
-            for (int i = 0; i < (360/degreeIncrimant); i++)
+            for (int i = 0; i < (360 / degreeIncrimant); i++)
             {
-                gfx.DrawLine(Pens.White, x, y, radius * (float)Math.Cos(degreeIncrimant * i * Math.PI/180) + x, radius * (float)Math.Sin(degreeIncrimant * i * Math.PI/180) + y);
+                gfx.DrawLine(Pens.White, x, y, radius * (float)Math.Cos(degreeIncrimant * i * Math.PI / 180) + x, radius * (float)Math.Sin(degreeIncrimant * i * Math.PI / 180) + y);
 
                 //gfx.DrawLine(Pens.White, x, y, i + y, returnCircle(i, radius) + y);
                 //gfx.DrawLine(Pens.White, x, y, i, -returnCircle(i, radius));
@@ -49,24 +49,23 @@ namespace Raycaster
 
         public void DrawRays(int x, int y, double radianIncrimant, int radius)
         {
-            float endX;
-            float endY;
-            Line currentLine;
-            bool didntIntersect;
-            Point intersectionPoint = new Point();
-            Point[] intersectionPoints = new Point[LinePoints.Length];
-            int leastDistance = int.MaxValue;
-            int distance;
-            for (int i = 0; i < (int)((double)(2*Math.PI) / radianIncrimant); i++)
+            int numberOfRays = (int)((double)(2 * Math.PI) / radianIncrimant) + 1;
+            for (int i = 0; i < numberOfRays; i++)
             {
-                didntIntersect = true;
-                endX = radius * (float)Math.Cos(radianIncrimant*(double)i) + x;
-                endY = radius * (float)Math.Sin(radianIncrimant*(double)i) + y;
+                float endX;
+                float endY;
+                Line currentLine;
+                bool didntIntersect = true;
+                PointF intersectionPoint = default;
+                PointF[] intersectionPoints = new PointF[LinePoints.Length];
+
+                endX = radius * (float)Math.Cos(radianIncrimant * i) + x;
+                endY = radius * (float)Math.Sin(radianIncrimant * i) + y;
                 currentLine = new Line(x, y, (int)endX, (int)endY);
-                
-                for(int z = 0; z < LinePoints.Length; z ++)
+
+                for (int z = 0; z < LinePoints.Length; z++)
                 {
-                    if(Intersect(new Line(LinePoints[z][0], LinePoints[z][1], LinePoints[z][2], LinePoints[z][3]), currentLine, out intersectionPoint))
+                    if (LineIntersection(new Line(LinePoints[z][0], LinePoints[z][1], LinePoints[z][2], LinePoints[z][3]), currentLine, out intersectionPoint))
                     {
                         intersectionPoints[z] = intersectionPoint;
                         didntIntersect = false;
@@ -78,22 +77,21 @@ namespace Raycaster
                 }
                 else
                 {
-                    foreach(Point point in intersectionPoints)
+                    double leastDistanceSquared = double.MaxValue;
+                    foreach (PointF point in intersectionPoints)
                     {
                         if (point != default)
                         {
-                            distance = (int)(Math.Sqrt(Math.Abs((point.X - x) * (point.X - x) + (point.Y - y) * (point.Y - y))));
-                            if (distance < leastDistance)
+                            double distanceSquared = (point.X - x) * (point.X - x) + (point.Y - y) * (point.Y - y);
+                            if (distanceSquared < leastDistanceSquared)
                             {
-                                leastDistance = distance;
+                                leastDistanceSquared = distanceSquared;
                                 intersectionPoint = point;
                             }
                         }
                     }
-                    if(intersectionPoint != default)
-                    {
-                        gfx.DrawLine(Pens.White, x, y, intersectionPoint.X, intersectionPoint.Y);
-                    }
+                    gfx.DrawLine(Pens.White, x, y, intersectionPoint.X, intersectionPoint.Y);
+
                 }
                 //else
                 //{
@@ -102,7 +100,7 @@ namespace Raycaster
             }
         }
 
-        private bool LineIntersection(Line ray, Line barrier, out Point intersectionPoint)
+        private bool LineIntersection(Line ray, Line barrier, out PointF intersectionPoint)
         {
             intersectionPoint = default;
             int den = ((ray.X1 - ray.X2) * (barrier.Y1 - barrier.Y2)) - ((ray.Y1 - ray.Y2) * (barrier.X1 - barrier.X2));
@@ -119,28 +117,28 @@ namespace Raycaster
 
             if (t >= 0 && t <= 1 && u >= 0 && u <= 1)
             {
-                intersectionPoint.X = (int)(ray.X1 + (t * (ray.X2 - ray.X1)));
-                intersectionPoint.Y = (int)(ray.Y1 + (t * (ray.Y2 - ray.Y1)));
+                intersectionPoint.X = ray.X1 + (t * (ray.X2 - ray.X1));
+                intersectionPoint.Y = ray.Y1 + (t * (ray.Y2 - ray.Y1));
                 return true;
             }
             return false;
         }
 
-        public bool Intersect(Line line1, Line line2, out Point intersectionPoint)
+        public bool Intersect(Line line1, Line line2, out PointF intersectionPoint)
         {
             intersectionPoint = default;
-            double denom = (double)((line1.X1 - line1.X2)*(line2.Y1  - line2.Y2) - (line1.Y1 - line1.Y2)*(line2.X1 - line2.X2));
-            
-            
+            double denom = (line1.X1 - line1.X2) * (line2.Y1 - line2.Y2) - (line1.Y1 - line1.Y2) * (line2.X1 - line2.X2);
+
+
             if (denom == 0)
             {
                 return false;
             }
 
-            double t = (double)((line1.X1 - line2.X1)*(line2.Y1 - line2.Y2) - (line1.Y1 - line2.Y1)*(line2.X1 - line2.X2));
+            double t = (line1.X1 - line2.X1) * (line2.Y1 - line2.Y2) - (line1.Y1 - line2.Y1) * (line2.X1 - line2.X2);
             t = t / denom;
 
-            double u = (double)((line1.X1-line1.X2)*(line1.Y1 - line2.Y1) - (line1.Y1 - line1.Y2)*(line1.X1 - line2.X1));
+            double u = (line1.X1 - line1.X2) * (line1.Y1 - line2.Y1) - (line1.Y1 - line1.Y2) * (line1.X1 - line2.X1);
             u = (double)(-1 * u / denom);
 
             if (t >= 0 && t <= 1 && u >= 0 && u <= 1)
@@ -148,7 +146,7 @@ namespace Raycaster
                 // definite intersection
                 // (Px,Py)= (x1 + t(x2-x1)), y1 + t(y2 - y1)
 
-                intersectionPoint = new Point((int)(line1.X1 + t*(line1.X2 - line1.X1)), (int)(line1.Y1 + t*(line1.Y2 - line1.Y1)));
+                intersectionPoint = new PointF((float)(line1.X1 + t * (line1.X2 - line1.X1)), (float)(line1.Y1 + t * (line1.Y2 - line1.Y1)));
                 return true;
             }
 
@@ -159,14 +157,14 @@ namespace Raycaster
         {
             double top;
             double bottom;
-            top = (double)((lineSegment[0] - rayLine[0])*(rayLine[1] - rayLine[3]) - (lineSegment[1] - rayLine[1])*(rayLine[0] - rayLine[2]));
-            bottom = (double)((lineSegment[0] - lineSegment[2])*(rayLine[1] - rayLine[3]) - (lineSegment[1] - lineSegment[3])*(rayLine[0] - rayLine[2]));
-            if(bottom == 0)
+            top = (double)((lineSegment[0] - rayLine[0]) * (rayLine[1] - rayLine[3]) - (lineSegment[1] - rayLine[1]) * (rayLine[0] - rayLine[2]));
+            bottom = (double)((lineSegment[0] - lineSegment[2]) * (rayLine[1] - rayLine[3]) - (lineSegment[1] - lineSegment[3]) * (rayLine[0] - rayLine[2]));
+            if (bottom == 0)
             {
                 return false;
             }
             double T = top / bottom;
-            if(T >= 0 && T <= 1)
+            if (T >= 0 && T <= 1)
             {
                 return true;
             }
@@ -177,14 +175,14 @@ namespace Raycaster
         {
             double top;
             double bottom;
-            top = (double)((lineSegment[0] - lineSegment[2])*(lineSegment[1] - rayLine[1]) - (lineSegment[1] - lineSegment[3])*(lineSegment[0] - lineSegment[2]));
-            bottom = (double)((lineSegment[0] - lineSegment[2])*(rayLine[1] - rayLine[3]) - (lineSegment[1] - lineSegment[3])*(rayLine[0] - rayLine[2]));
-            if(bottom == 0)
+            top = (double)((lineSegment[0] - lineSegment[2]) * (lineSegment[1] - rayLine[1]) - (lineSegment[1] - lineSegment[3]) * (lineSegment[0] - lineSegment[2]));
+            bottom = (double)((lineSegment[0] - lineSegment[2]) * (rayLine[1] - rayLine[3]) - (lineSegment[1] - lineSegment[3]) * (rayLine[0] - rayLine[2]));
+            if (bottom == 0)
             {
                 return false;
             }
-            double U = (-1)*(top / bottom);
-            if(U >= 0 && U <= 1)
+            double U = (-1) * (top / bottom);
+            if (U >= 0 && U <= 1)
             {
                 return true;
             }
@@ -201,7 +199,7 @@ namespace Raycaster
                     returnArray[i] = new int[4];
                 }
             }
-            
+
             int[] temp = new int[2];
             for (int i = 0; i < 4; i++)
             {
@@ -209,11 +207,12 @@ namespace Raycaster
                 {
                     temp[x] = random.Next(0, 801);
                 }
-                if(temp[0] <= temp[1])
+                if (temp[0] <= temp[1])
                 {
                     returnArray[i][0] = temp[0];
                     returnArray[i][2] = temp[1]
-;               }
+;
+                }
                 else
                 {
                     returnArray[i][0] = temp[1];
@@ -223,11 +222,12 @@ namespace Raycaster
                 {
                     temp[y] = random.Next(0, 451);
                 }
-                if(temp[0] <= temp[1])
+                if (temp[0] <= temp[1])
                 {
                     returnArray[i][1] = temp[0];
                     returnArray[i][3] = temp[1];
-;               }
+                    ;
+                }
                 else
                 {
                     returnArray[i][1] = temp[1];
@@ -267,7 +267,7 @@ namespace Raycaster
             }
 
             DrawBorder();
-            DrawRays(cursorLoc.X, cursorLoc.Y, .25, 1000);
+            DrawRays(cursorLoc.X, cursorLoc.Y, .1, 1000);
             // this should be last line ideally to show the stuff we drew 
             pictureBox1.Image = canvas;
         }
